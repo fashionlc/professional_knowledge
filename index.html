@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识复习自检应用</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="fluid-bg"></canvas>
+    
+    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="打开历史记录">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+    </button>
+
+    <aside id="history-sidebar" class="history-sidebar">
+        <div class="sidebar-header">
+            <h4>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                历史记录
+            </h4>
+            <button id="sidebar-close" class="sidebar-close" aria-label="关闭侧边栏">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div id="history-list" class="history-list">
+            <div class="empty-history">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <p>暂无历史记录</p>
+            </div>
+        </div>
+        <div class="sidebar-footer">
+            <button id="clear-history" class="clear-history-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                清空历史
+            </button>
+        </div>
+    </aside>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop hidden"></div>
+    
+    <div class="container">
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>知识复习自检</h1>
+                    <p class="tagline">AI 驱动的知识巩固助手</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <div class="version-badge">v3.5.5</div>
+                <div class="api-status-dropdown" id="api-status-dropdown">
+                    <button class="api-status-btn" id="api-status-btn">
+                        <span class="api-status-dot" id="api-status-dot"></span>
+                        <span class="api-status-model" id="api-status-model">deepseek-chat</span>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="api-dropdown-panel hidden" id="api-dropdown-panel">
+                        <div class="dropdown-section">
+                            <h5>API 配置</h5>
+                            <div class="dropdown-item">
+                                <label>API 地址</label>
+                                <input type="text" id="api-url-dropdown" placeholder="https://api.deepseek.com">
+                            </div>
+                            <div class="dropdown-item">
+                                <label>API Key</label>
+                                <input type="password" id="api-key-dropdown" placeholder="输入您的API密钥">
+                            </div>
+                            <div class="dropdown-item">
+                                <label>模型</label>
+                                <select id="model-dropdown">
+                                    <option value="deepseek-chat">deepseek-chat</option>
+                                    <option value="deepseek-reasoner">deepseek-reasoner</option>
+                                </select>
+                            </div>
+                            <button id="save-dropdown-config" class="save-dropdown-btn">保存配置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="hero">
+            <h2 class="hero-title">
+                <span style="--delay: 0.1s;">将</span>
+                <span style="--delay: 0.15s;"><span class="gradient-text" data-text="学">学</span></span>
+                <span style="--delay: 0.2s;"><span class="gradient-text" data-text="习">习</span></span>
+                <span style="--delay: 0.25s;">转</span>
+                <span style="--delay: 0.3s;">化</span>
+                <span style="--delay: 0.35s;">为</span>
+                <span style="--delay: 0.4s;"><span class="gradient-text" data-text="精">精</span></span>
+                <span style="--delay: 0.45s;"><span class="gradient-text" data-text="通">通</span></span>
+            </h2>
+            <p class="hero-subtitle">通过 AI 生成的个性化练习题，高效巩固任何主题的知识</p>
+        </div>
+
+        <div class="steps-indicator">
+            <div class="step active" data-step="1">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <span class="step-label">输入主题</span>
+                <div class="step-dot"></div>
+            </div>
+            <div class="step-divider">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <span class="step-label">选择难度</span>
+                <div class="step-dot"></div>
+            </div>
+            <div class="step-divider">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
+                <span class="step-label">生成题目</span>
+                <div class="step-dot"></div>
+            </div>
+        </div>
+
+        <div class="input-card">
+            <div class="card-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>开始生成练习题</span>
+            </div>
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="knowledge-point">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        知识点主题
+                    </label>
+                    <div class="input-container">
+                        <input type="text" id="knowledge-point" placeholder="例如：JavaScript 数组方法">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="difficulty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        难度等级
+                    </label>
+                    <div class="select-container">
+                        <select id="difficulty">
+                            <option value="" selected>请选择难度</option>
+                            <option value="easy">初级</option>
+                            <option value="medium">中级</option>
+                            <option value="hard">高级</option>
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                
+                <button id="generate-btn" class="generate-btn">
+                    <div class="btn-inner">
+                        <span class="btn-text">生成练习题</span>
+                        <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                        <div class="btn-spinner hidden"></div>
+                    </div>
+                    <div class="btn-glow"></div>
+                </button>
+
+                <button id="regenerate-btn" class="regenerate-btn hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <polyline points="23 20 23 14 17 14"></polyline>
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+                    </svg>
+                    重新生成题目
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="loader-wrapper">
+                <div class="loader"></div>
+                <div class="loader-text">
+                    <div class="loader-title">正在生成练习题...</div>
+                    <div class="loader-subtitle">AI 正在为您精心准备个性化练习题</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="questions-container" class="questions-container hidden">
+            <div class="questions-header">
+                <div class="header-left">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        练习题列表
+                        <span class="badge-inline">
+                            <span class="badge-count" id="count">0</span>
+                            <span>道题目</span>
+                        </span>
+                    </h3>
+                </div>
+                <div class="header-right">
+                    <div class="filter-dropdown">
+                        <select id="filter-select">
+                            <option value="all">全部题目</option>
+                            <option value="unseen">未查看</option>
+                            <option value="seen">已查看</option>
+                        </select>
+                        <svg class="filter-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <button id="expand-all-btn" class="expand-all-btn">
+                        <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <polyline points="9 21 3 21 3 15"></polyline>
+                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                        <span class="expand-text">展开全部</span>
+                    </button>
+                    <div class="topic-display">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        </svg>
+                        <span class="topic-label">当前主题</span>
+                        <span id="topic-display" class="topic-value"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="questions-list" class="questions-list"></div>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+            <div class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 2v4"></path>
+                    <path d="M12 18v4"></path>
+                    <path d="M4.93 4.93l2.83 2.83"></path>
+                    <path d="M16.24 16.24l2.83 2.83"></path>
+                    <path d="M2 12h4"></path>
+                    <path d="M18 12h4"></path>
+                    <path d="M4.93 19.07l2.83-2.83"></path>
+                    <path d="M16.24 7.76l2.83-2.83"></path>
+                </svg>
+            </div>
+            <h4>准备好开启知识探索之旅了吗？</h4>
+            <p>输入知识点主题，AI 将为您量身打造专属练习题</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>为知识探索者而造 ❤️</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
